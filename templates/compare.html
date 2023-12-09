@@ -1,0 +1,118 @@
+<style>
+    #image-preview {
+      display: none;
+      margin: auto;
+      width: 200px;
+      height: 200px;
+      padding: 10px;
+    }
+
+    #checkbox-select-img{
+        height: 200px;
+        width: 200px;
+        padding-left: 10%;
+        padding-right: 10%;
+        padding-bottom: 10%;
+    }
+  </style>
+
+
+{% extends 'base.html' %}
+{% block content %}
+<!-- form-section -->
+<section class="contact-section" style="padding-top:50px;" id="predict1">
+    <div class="container">
+            <form class="login100-form validate-form" action="/pred_comps" method=post enctype=multipart/form-data> 
+            <div class="row" style=" width: 100%; margin: auto; padding: 15px;" >
+                <div class="column" >
+                    <div class="form-check form-check-inline">
+                        <p style="font-weight: bold; color: black;">Compare Model : </p>
+                    </div>   
+                </div>
+                <div class="column" >
+                    <div class="form-check form-check-inline"> 
+                        <div class="checkboxes">
+                            <input type="hidden" name="select_model" id="chose_model" value="{{listModel[0]}}">
+                            {% for idx in range(listModel|length) %}
+                                {%if idx == 0%}
+                                    <label style="padding-left:2em">
+                                        <input name="select_model" type="checkbox" id="chose_model" value='{{listModel[idx]}}' checked disabled/> 
+                                        <span>{{" ".join(listModel[idx].split("_")[-2:]).capitalize()}}</span>
+                                    </label>
+                                {%else%}
+                                    <label style="padding-left:2em">
+                                        <input name="select_model" type="checkbox" id="chose_model" value='{{listModel[idx]}}'/> 
+                                        <span>{{" ".join(listModel[idx].split("_")[-2:]).capitalize()}}</span>
+                                    </label>
+                                {%endif%}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <img id="image-preview" alt="image preview" src="#" style="width: 20%;"/>
+            <div class="container-login100-form-btn">
+                <label for="image-source-patchA" style="margin: 10px;">Input Image</label>
+                <div class="wrap-input100 validate-input" data-validate="Image file is required" id="input">
+                    <input class="input100" id="image-source" name="file" onchange="previewImage();" type="file"
+                        alt="Input Image" accept="image/jpeg,image/jpg,image/png">
+                </div>
+            </div>
+            <div class="container-login100-form-btn" style="margin-top: 20px;">
+                <button class="login100-form-btn" id="send" type="submit">
+                    Execute
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+<!-- form-section end -->
+    <!-- grid-section -->
+    <section class="contact-section centred" style="padding-top:100px;" id="predict">
+        <div class="container">
+            <div class="title-box centred" >
+                <div class="sec-title">Select an Image to Predict</div><br>
+            </div>
+            <form action="/pred_comp" method="POST">
+            <!-- <form action="/pred_comp" method="POST">-->
+                <div class="row" style=" width: 100%; margin: auto; padding: 15px;" >
+                    <div class="column" >
+                        <div class="form-check form-check-inline">
+                            <p style="font-weight: bold; color: black;">Compare Model : </p>
+                        </div>   
+                    </div>
+                    <div class="column" >
+                        <div class="form-check form-check-inline"> 
+                            <div class="checkboxes">
+                                <input type="hidden" name="select_model" id="chose_model" value="{{listModel[0]}}">
+                                {% for idx in range(listModel|length) %}
+                                    {%if idx == 0%}
+                                        <label style="padding-left:2em">
+                                            <input name="select_model" type="checkbox" id="chose_model" value='{{listModel[idx]}}' checked disabled/> 
+                                            <span>{{" ".join(listModel[idx].split("_")[-2:]).capitalize()}}</span>
+                                        </label>
+                                    {%else%}
+                                        <label style="padding-left:2em">
+                                            <input name="select_model" type="checkbox" id="chose_model" value='{{listModel[idx]}}'/> 
+                                            <span>{{" ".join(listModel[idx].split("_")[-2:]).capitalize()}}</span>
+                                        </label>
+                                    {%endif%}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="justify-content: center;background-color:rgb(235, 235, 235);">
+                    <input type="hidden" name="input_image" id="count" value="static/main/images/predict/g4.jpg" />
+                    {% for idx in range( imageQuery |length ) %}
+                    <div class="column" style="background-color:rgb(235, 235, 235);width: 200px; margin:10px;">
+                        <p style="text-align: center;">{{ imageClass[idx] }}</p>
+                        <input type="image" name="submit" onclick="change('{{imageQuery[idx]}}')" id="checkbox-select-img" src="{{imageQuery[idx]}}"/>
+                    </div>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+    </section>
+    <!-- grid-section end -->
+{% endblock %}
