@@ -29,7 +29,7 @@ Project ini menggunakan dataset rock paper scissor dengan jumlah data sebanyak 2
 **EfficientNet**
 >Tan, M., & Le, Q. (2019, May). Efficientnet: Rethinking model scaling for convolutional neural networks. In International conference on machine learning (pp. 6105-6114). PMLR.
 
-![N|Solid](https://www.researchgate.net/publication/353790360/figure/fig3/AS:11431281179142345@1691155534303/EfficientNet-B3-structure-aEfficientNet-B3-bMBConv6-55.png)
+![N|Solid](https://i.postimg.cc/xCbZxL1V/Efficient-Net-B3-structure-a-Efficient-Net-B3-b-MBConv6-55-1.png)
 
 **Summary Model**
 

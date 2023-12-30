@@ -19,9 +19,29 @@
 
 {% extends 'base.html' %}
 {% block content %}
+<!-- Bootstrap Modal for Webcam -->
+<div class="modal fade" id="webcamModal" tabindex="-1" aria-labelledby="webcamModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="webcamModalLabel">Webcam Capture</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <video id="webcamVideo" width="100%" height="auto" autoplay></video>
+          <button type="button" class="btn btn-primary mt-2" id="captureBtn">Capture Image</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- form-section -->
 <section class="contact-section" style="padding-top:50px;" id="predict1">
     <div class="container">
+        <h1>Upload Image</h1>
             <form class="login100-form validate-form" action="/pred_comps" method=post enctype=multipart/form-data> 
             <div class="row" style=" width: 100%; margin: auto; padding: 15px;" >
                 <div class="column" >
@@ -50,21 +70,80 @@
                     </div>
                 </div>
             </div>
-            <img id="image-preview" alt="image preview" src="#" style="width: 20%;"/>
-            <div class="container-login100-form-btn">
-                <label for="image-source-patchA" style="margin: 10px;">Input Image</label>
-                <div class="wrap-input100 validate-input" data-validate="Image file is required" id="input">
-                    <input class="input100" id="image-source" name="file" onchange="previewImage();" type="file"
-                        alt="Input Image" accept="image/jpeg,image/jpg,image/png">
+            <div class="row">
+                <div class="col">
+                    <img id="image-preview" alt="image preview" src="#" style="width: 20%;"/>
+                    <div class="container-login100-form-btn">
+                        <label for="image-source-patchA" style="margin: 10px;">Input Image</label>
+                        <div class="wrap-input100 validate-input" data-validate="Image file is required" id="input">
+                            <input class="input100" id="image-source" name="file" onchange="previewImage();" type="file"
+                                alt="Input Image" accept="image/jpeg,image/jpg,image/png">
+                        </div>
+                    </div>
+                    <div class="container-login100-form-btn" style="margin-top: 20px;">
+                        <button class="login100-form-btn" id="send" type="submit">
+                            Execute
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="container-login100-form-btn" style="margin-top: 20px;">
-                <button class="login100-form-btn" id="send" type="submit">
-                    Execute
-                </button>
-            </div>
+            
         </form>
     </div>
+
+    <div class="container">
+        <br>
+        <h1>Capture Image</h1>
+        <form class="login100-form validate-form" action="/pred_comps_cam" method=post enctype=multipart/form-data> 
+        <div class="row" style=" width: 100%; margin: auto; padding: 15px;" >
+            <div class="column" >
+                <div class="form-check form-check-inline">
+                    <p style="font-weight: bold; color: black;">Compare Model : </p>
+                </div>   
+            </div>
+            <div class="column" >
+                <div class="form-check form-check-inline"> 
+                    <div class="checkboxes">
+                        <input type="hidden" name="select_model" id="chose_model" value="{{listModel[0]}}">
+                        {% for idx in range(listModel|length) %}
+                            {%if idx == 0%}
+                                <label style="padding-left:2em">
+                                    <input name="select_model" type="checkbox" id="chose_model" value='{{listModel[idx]}}' checked disabled/> 
+                                    <span>{{" ".join(listModel[idx].split("_")[-2:]).capitalize()}}</span>
+                                </label>
+                            {%else%}
+                                <label style="padding-left:2em">
+                                    <input name="select_model" type="checkbox" id="chose_model" value='{{listModel[idx]}}'/> 
+                                    <span>{{" ".join(listModel[idx].split("_")[-2:]).capitalize()}}</span>
+                                </label>
+                            {%endif%}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div id="capturedImageContainer"></div>
+                <div class="container-login100-form-btn">
+                    <label for="image-source-patchA" style="margin: 10px;">Input Image</label>
+                    <div class="wrap-input100 validate-input" data-validate="Image file is required" id="input">
+                        <input type="hidden" name="filecam" id="fileInput" type="text">
+                        <button type="button" class="input100" data-bs-toggle="modal" data-bs-target="#webcamModal">
+                            Open Webcam
+                          </button>
+                    </div>
+                </div>
+                <div class="container-login100-form-btn" style="margin-top: 20px;">
+                    <button class="login100-form-btn" id="sendWebcam" type="submit">
+                        Execute
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </form>
+</div>
 </section>
 <!-- form-section end -->
     <!-- grid-section -->
@@ -115,4 +194,54 @@
         </div>
     </section>
     <!-- grid-section end -->
+
+    <!-- Bootstrap JS (Popper.js and Bootstrap JS) -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+  <script>
+    const webcamVideo = document.getElementById('webcamVideo');
+    const captureBtn = document.getElementById('captureBtn');
+    const fileInput = document.getElementById('fileInput');
+    const capturedImageContainer = document.getElementById('capturedImageContainer');
+    const webcamModal = new bootstrap.Modal(document.getElementById('webcamModal'));
+
+    // Start the video stream when the modal is shown
+    webcamModal._element.addEventListener('show.bs.modal', function () {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          webcamVideo.srcObject = stream;
+        })
+        .catch((error) => {
+          console.error('Error accessing camera:', error);
+        });
+    });
+
+    // Stop the video stream when the modal is hidden
+    webcamModal._element.addEventListener('hide.bs.modal', function () {
+      const stream = webcamVideo.srcObject;
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop());
+      webcamVideo.srcObject = null;
+    });
+
+    // Capture image
+    captureBtn.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = webcamVideo.videoWidth;
+      canvas.height = webcamVideo.videoHeight;
+      canvas.getContext('2d').drawImage(webcamVideo, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL('image/png');
+
+      const capturedImage = new Image();
+      capturedImage.src = imageData;
+      capturedImageContainer.innerHTML = '';
+      capturedImageContainer.appendChild(capturedImage);
+
+      fileInput.value = imageData;
+
+      // Close the modal
+      webcamModal.hide();
+    });
+  </script>
 {% endblock %}

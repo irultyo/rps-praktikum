@@ -1,6 +1,8 @@
 from flask import Flask, request, render_template
 
 from utils import utils
+import base64
+import re
 
 
 CLASS_DICT          = {"Paper": 0, "Rock": 1, "Scissors": 2} # TO CHANGE
@@ -8,6 +10,7 @@ LABELS              = list(CLASS_DICT.keys())
 MODEL_PATH          = "static/model/"
 QUERY_IMAGE_PATH    = "static/queryImage/"
 QUERY_UPLOAD_IMAGE  = "static/queryUpload/"
+
 
 app = Flask(__name__) 
 
@@ -62,6 +65,27 @@ def predicts_compare():
     getImageFile                     = request.files["file"]
     relocationImageFile              = QUERY_UPLOAD_IMAGE+'temp.jpg'
     getImageFile.save(relocationImageFile)
+    predictionResult, predictionTime = utils.predictsImage(MODEL_PATH, choosenModelList, relocationImageFile)  
+    return render_template('/result_compare.html', labels = LABELS, probs = predictionResult, model = choosenModelList, run_time = predictionTime, img = relocationImageFile[7:])
+
+@app.route('/pred_comps_cam', methods=['POST'])
+def predicts_compares():
+    """
+        Fungsi ini digunakan untuk memproses image yang dimasukkan pengguna untuk menghasilkan prediksi kelas.
+        Terdapat 4 variabel pada fungsi ini:
+            choosenModelList    : variabel ini menyimpan data model yang dipilih dari halaman sebelumnya
+            getImageFile        : variabel ini menyimpan data citra yang dipilih dari halaman sebelumnya
+            relocationImageFile : variabel ini digunakan untuk menyimpan path citra yang diupload pengguna
+            predictionResult    : variabel ini berisi hasil prediksi dalam bentuk list
+            predictionTime      : variabel ini berisi lama waktu prediksi
+    """
+    choosenModelList                 = request.form.getlist('select_model')
+    getImageFile                     = request.form['filecam']
+    base64img = re.sub('^data:image/.+;base64,', '', getImageFile)
+    imgdata = base64.b64decode(base64img)
+    relocationImageFile              = QUERY_UPLOAD_IMAGE+'temp.jpg'
+    with open(relocationImageFile, 'wb') as f:
+        f.write(imgdata)
     predictionResult, predictionTime = utils.predictsImage(MODEL_PATH, choosenModelList, relocationImageFile)  
     return render_template('/result_compare.html', labels = LABELS, probs = predictionResult, model = choosenModelList, run_time = predictionTime, img = relocationImageFile[7:])
 
